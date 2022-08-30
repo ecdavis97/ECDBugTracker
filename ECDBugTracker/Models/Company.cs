@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDBugTracker.Models
 {
@@ -8,7 +9,8 @@ namespace ECDBugTracker.Models
         [Required]
         public string? Name { get; set; }
         public string? Description { get; set; }
-        public IFormFile? imageFormFile { get; set; }
+        [NotMapped]
+        public IFormFile? ImageFormFile { get; set; }
         public string? ImageFileName { get; set; }
         public string? ImageFileType { get; set; }
 

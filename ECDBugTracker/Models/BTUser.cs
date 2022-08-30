@@ -15,6 +15,7 @@ namespace ECDBugTracker.Models
         public string? LastName { get; set; }
         [NotMapped]
         public string? FullName { get; set; }
+        [NotMapped]
         public IFormFile? ImageFormFile { get; set; }
         public string? ImageFileName { get; set; }
         public string? ImageFileType { get; set; }
@@ -22,6 +23,6 @@ namespace ECDBugTracker.Models
 
         //navigation properties
         public virtual Company? Company { get; set; }
-        public virtual ICollection<Project>? Projects { get; set; }
+        public virtual ICollection<Project>? Projects { get; set; } = new HashSet<Project>();
     }
 }

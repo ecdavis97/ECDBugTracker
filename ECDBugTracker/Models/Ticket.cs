@@ -10,7 +10,7 @@ namespace ECDBugTracker.Models
         [Required]
         public string? Description { get; set; }
         [DataType(DataType.DateTime)]
-        public DateTime? Created { get; set; }
+        public DateTime Created { get; set; }
         [DataType(DataType.DateTime)]
         public DateTime? Updated { get; set; }
         public bool Archived { get; set; }
@@ -30,9 +30,9 @@ namespace ECDBugTracker.Models
         public virtual TicketStatus? TicketStatus { get; set; }
         public virtual BTUser? DeveloperUser { get; set; }
         public virtual BTUser? SubmitterUser { get; set; }
-        public virtual ICollection<TicketComment>? Comments { get; set; }
-        public virtual ICollection<TicketAttachment>? TicketAttachments { get; set; }
-        public virtual TicketHistory? History { get; set; }
+        public virtual ICollection<TicketComment>? Comments { get; set; } = new HashSet<TicketComment>();
+        public virtual ICollection<TicketAttachment>? TicketAttachments { get; set; } = new HashSet<TicketAttachment>();
+        public virtual ICollection<TicketHistory>? History { get; set; } = new HashSet<TicketHistory>();
 
     }
 }

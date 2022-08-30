@@ -9,7 +9,7 @@ namespace ECDBugTracker.Models
         public string? PropertyName { get; set; }
         public string? Description { get; set; }
         [DataType(DataType.DateTime)]
-        public DateTime? Created { get; set; }
+        public DateTime Created { get; set; }
         public string? OldValue { get; set; }
         public string? NewValue { get; set; }
         [Required]

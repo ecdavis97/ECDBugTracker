@@ -20,7 +20,7 @@ namespace ECDBugTracker.Models
         public bool HasBeenViewed { get; set; }
 
         //navigation properties
-        public ICollection<NotificationType>? NotificationType { get; set; }
+        public NotificationType? NotificationType { get; set; }
         public virtual Ticket? Ticket { get; set; }
         public virtual Project? Project { get; set; }
         public virtual BTUser? Sender { get;  set; }
