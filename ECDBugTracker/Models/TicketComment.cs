@@ -6,6 +6,7 @@ namespace ECDBugTracker.Models
     {
         public int Id { get; set; }
         [Required]
+        [StringLength(2000)]
         public string? Comment { get; set; }
         [DataType(DataType.DateTime)]
         public DateTime Created { get; set; }

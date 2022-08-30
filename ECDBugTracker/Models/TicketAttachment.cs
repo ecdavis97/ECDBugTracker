@@ -13,10 +13,11 @@ namespace ECDBugTracker.Models
         [Required]
         public string? UserId { get; set; }
 
-        public byte[]? FileData { get; set; }
-        public string? FileType { get; set; }
         [NotMapped]
         public IFormFile? FormFile { get; set; }
+        public byte[]? FileData { get; set; }
+        public string? FileType { get; set; }
+
 
         //navigation properties
         public virtual Ticket? Ticket { get; set; }

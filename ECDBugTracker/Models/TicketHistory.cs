@@ -12,6 +12,7 @@ namespace ECDBugTracker.Models
         public DateTime Created { get; set; }
         public string? OldValue { get; set; }
         public string? NewValue { get; set; }
+
         [Required]
         public string? UserId { get; set; }
 

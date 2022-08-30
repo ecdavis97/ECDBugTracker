@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace ECDBugTracker.Models
 {
@@ -6,19 +7,29 @@ namespace ECDBugTracker.Models
     {
         public int Id { get; set; }
         [Required]
+        [Display(Name = "Ticket Title")]
+        [StringLength(50, ErrorMessage = "The {0} must be at least {2} and a maximum of {1} characters.", MinimumLength = 2)]
         public string? Title { get; set; }
         [Required]
+        [DisplayName("Ticket Description")]
+        [StringLength(2000)]
         public string? Description { get; set; }
         [DataType(DataType.DateTime)]
+        [DisplayName("Date Created")]
         public DateTime Created { get; set; }
         [DataType(DataType.DateTime)]
+        [DisplayName("Date Updated")]
         public DateTime? Updated { get; set; }
         public bool Archived { get; set; }
+        [DisplayName("Archived By Project")]
         public bool ArchivedByProject { get; set; }
+
         public int ProjectId { get; set; }
         public int TicketTypeId { get; set; }
         public int TicketStatusId { get; set; }
         public int TicketPriorityId { get; set; }
+
+        [DisplayName("Ticket Developer")]
         public string? DeveloperUserId { get; set; }
         [Required]
         public string? SubmitterUserId { get; set; }

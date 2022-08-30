@@ -15,7 +15,7 @@ namespace ECDBugTracker.Models
         [Required]
         public string? SenderId { get; set; }
         [Required]
-        public string? Recipient { get; set; }
+        public string? RecipientId { get; set; }
         public int NotificationTypeId { get; set; }
         public bool HasBeenViewed { get; set; }
 
@@ -24,7 +24,7 @@ namespace ECDBugTracker.Models
         public virtual Ticket? Ticket { get; set; }
         public virtual Project? Project { get; set; }
         public virtual BTUser? Sender { get;  set; }
-        public virtual BTUser? Recipient { get; set}
+        public virtual BTUser? Recipient { get; set; }
 
     }
 }

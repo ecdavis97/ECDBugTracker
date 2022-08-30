@@ -1,9 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDBugTracker.Models
 {
-    public class BTUser
+    public class BTUser : IdentityUser
     {
         [Required]
         [Display(Name = "First Name")]
@@ -15,9 +16,11 @@ namespace ECDBugTracker.Models
         public string? LastName { get; set; }
         [NotMapped]
         public string? FullName { get; set; }
+
         [NotMapped]
         public IFormFile? ImageFormFile { get; set; }
         public string? ImageFileName { get; set; }
+        public byte[]? ImageData { get; set; }
         public string? ImageFileType { get; set; }
         public int CompanyId { get; set; }
 
