@@ -10,18 +10,18 @@ namespace ECDBugTracker.Data
             : base(options)
         {
         }
-        public DbSet<Company>? Companies { get; set; }
-        public DbSet<Invite>? Invites { get; set; }
-        public DbSet<Notification>? Notifications { get; set; }
-        public DbSet<NotificationType>? NotificationTypes { get; set; }
-        public DbSet<Project>? Project { get; set; }
-        public DbSet<ProjectPriority>? ProjectPriorities { get; set; }
-        public DbSet<Ticket>? Tickets { get; set; }
-        public DbSet<TicketAttachment>? TicketAttachments { get; set; }
-        public DbSet<TicketComment>? TicketComments { get; set; }
-        public DbSet<TicketHistory>? TicketHistories { get; set; }
-        public DbSet<TicketPriority>? TicketPriorities { get; set; }
-        public DbSet<TicketStatus>? TicketStatuses { get; set; }
-        public DbSet<TicketType>? TicketTypes { get; set; }
+        public virtual DbSet<Company> Companies { get; set; }
+        public virtual DbSet<Invite> Invites { get; set; }
+        public virtual DbSet<Notification> Notifications { get; set; }
+        public virtual DbSet<NotificationType> NotificationTypes { get; set; }
+        public virtual DbSet<Project> Project { get; set; }
+        public virtual DbSet<ProjectPriority> ProjectPriorities { get; set; }
+        public virtual DbSet<Ticket>? Tickets { get; set; }
+        public virtual DbSet<TicketAttachment> TicketAttachments { get; set; }
+        public virtual DbSet<TicketComment> TicketComments { get; set; }
+        public virtual DbSet<TicketHistory> TicketHistories { get; set; }
+        public virtual DbSet<TicketPriority> TicketPriorities { get; set; }
+        public virtual DbSet<TicketStatus> TicketStatuses { get; set; }
+        public virtual DbSet<TicketType> TicketTypes { get; set; }
     }
 }

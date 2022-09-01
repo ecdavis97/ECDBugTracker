@@ -1,5 +1,10 @@
 ﻿@model IEnumerable<ECDBugTracker.Models.Project>
 
+@using ECDBugTracker.Services.Interfaces
+@using ECDBugTracker.Models.Enums
+
+@inject IImageService ImageService
+
 @{
     ViewData["Title"] = "Index";
 }
@@ -29,12 +34,6 @@
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.ImageFileName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ImageFileData)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ImageContentType)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Archived)
@@ -67,22 +66,16 @@
                 @Html.DisplayFor(modelItem => item.EndDate)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.ImageFileName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ImageFileData)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ImageContentType)
+                <img src='@ImageService.ConvertByteArrayToFile(item.ImageFileData!, item.ImageContentType!,(int)DefaultImage.Project)' class="square-img rounded-start" style="height: 120px; width: 120px" alt="...">
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Archived)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Company.Name)
+                @Html.DisplayFor(modelItem => item.Company!.Name)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.ProjectPriority.Id)
+                @Html.DisplayFor(modelItem => item.ProjectPriority!.Id)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |

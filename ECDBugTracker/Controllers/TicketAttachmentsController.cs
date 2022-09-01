@@ -22,7 +22,7 @@ namespace ECDBugTracker.Controllers
         // GET: TicketAttachments
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.TicketAttachments.Include(t => t.Ticket).Include(t => t.User);
+            var applicationDbContext = _context.TicketAttachments!.Include(t => t.Ticket).Include(t => t.User);
             return View(await applicationDbContext.ToListAsync());
         }
 

@@ -22,7 +22,7 @@ namespace ECDBugTracker.Controllers
         // GET: Invites
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Invites.Include(i => i.Invitee).Include(i => i.Invitor);
+            var applicationDbContext = _context.Invites!.Include(i => i.Invitee).Include(i => i.Invitor);
             return View(await applicationDbContext.ToListAsync());
         }
 

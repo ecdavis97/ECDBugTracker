@@ -7,22 +7,32 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ECDBugTracker.Data;
 using ECDBugTracker.Models;
+using ECDBugTracker.Services.Interfaces;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ECDBugTracker.Controllers
 {
+    [Authorize]
     public class ProjectsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IImageService _imageService;
+        private readonly UserManager<BTUser> _userManager;
 
-        public ProjectsController(ApplicationDbContext context)
+        public ProjectsController(ApplicationDbContext context,
+                                  IImageService imageService,
+                                  UserManager<BTUser> userManager)
         {
             _context = context;
+            _imageService = imageService;
+            _userManager = userManager;
         }
 
         // GET: Projects
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Project.Include(p => p.Company).Include(p => p.ProjectPriority);
+            var applicationDbContext = _context.Project!.Include(p => p.Company).Include(p => p.ProjectPriority);
             return View(await applicationDbContext.ToListAsync());
         }
 
@@ -47,11 +57,13 @@ namespace ECDBugTracker.Controllers
         }
 
         // GET: Projects/Create
+        [Authorize(Roles="Admin, ProjectManager")]
         public IActionResult Create()
         {
-            ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Name");
-            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Id");
-            return View();
+            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Name");
+            //ViewData["TicketId"] = new SelectList(_context.Tickets, "Id", "Name");
+
+            return View(new Project());
         }
 
         // POST: Projects/Create
@@ -62,11 +74,26 @@ namespace ECDBugTracker.Controllers
         public async Task<IActionResult> Create([Bind("Id,CompanyId,Name,Description,Created,StartDate,EndDate,ProjectPriorityId,ImageFileName,ImageFileData,ImageContentType,Archived")] Project project)
         {
             if (ModelState.IsValid)
-            {
+            {                
+
+                //get company ID
+                project.CompanyId = (await _userManager.GetUserAsync(User)).CompanyId;
+
+                project.Created = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
+
+                if (project.ImageFormFile != null)
+                {
+                    project.ImageFileData = await _imageService.ConvertFileToByteArrayAsync(project.ImageFormFile);
+                    project.ImageContentType = project.ImageFormFile.ContentType;
+                }
+
+
+
                 _context.Add(project);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Name", project.CompanyId);
             ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Id", project.ProjectPriorityId);
             return View(project);
@@ -97,6 +124,8 @@ namespace ECDBugTracker.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,CompanyId,Name,Description,Created,StartDate,EndDate,ProjectPriorityId,ImageFileName,ImageFileData,ImageContentType,Archived")] Project project)
         {
+            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Name");
+
             if (id != project.Id)
             {
                 return NotFound();
@@ -106,6 +135,15 @@ namespace ECDBugTracker.Controllers
             {
                 try
                 {
+                    project.Created = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
+                    //project.StartDate = DateTime.SpecifyKind(DateTime.);
+
+                    if (project.ImageFormFile != null)
+                    {
+                        project.ImageFileData = await _imageService.ConvertFileToByteArrayAsync(project.ImageFormFile);
+                        project.ImageContentType = project.ImageFormFile.ContentType;
+                    }
+
                     _context.Update(project);
                     await _context.SaveChangesAsync();
                 }

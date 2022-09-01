@@ -3,6 +3,7 @@ using System;
 using ECDBugTracker.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ECDBugTracker.data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220831191520_003-imageFileNames")]
+    partial class _003imageFileNames
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,7 +36,7 @@ namespace ECDBugTracker.data.Migrations
 
                     b.HasIndex("ProjectsId");
 
-                    b.ToTable("BTUserProject", (string)null);
+                    b.ToTable("BTUserProject");
                 });
 
             modelBuilder.Entity("ECDBugTracker.Models.BTUser", b =>
@@ -148,7 +150,7 @@ namespace ECDBugTracker.data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Companies", (string)null);
+                    b.ToTable("Companies");
                 });
 
             modelBuilder.Entity("ECDBugTracker.Models.Invite", b =>
@@ -209,7 +211,7 @@ namespace ECDBugTracker.data.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("Invites", (string)null);
+                    b.ToTable("Invites");
                 });
 
             modelBuilder.Entity("ECDBugTracker.Models.Notification", b =>
@@ -263,7 +265,7 @@ namespace ECDBugTracker.data.Migrations
 
                     b.HasIndex("TicketId");
 
-                    b.ToTable("Notifications", (string)null);
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("ECDBugTracker.Models.NotificationType", b =>
@@ -279,7 +281,7 @@ namespace ECDBugTracker.data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("NotificationTypes", (string)null);
+                    b.ToTable("NotificationTypes");
                 });
 
             modelBuilder.Entity("ECDBugTracker.Models.Project", b =>
@@ -333,7 +335,7 @@ namespace ECDBugTracker.data.Migrations
 
                     b.HasIndex("ProjectPriorityId");
 
-                    b.ToTable("Project", (string)null);
+                    b.ToTable("Project");
                 });
 
             modelBuilder.Entity("ECDBugTracker.Models.ProjectPriority", b =>
@@ -349,7 +351,7 @@ namespace ECDBugTracker.data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProjectPriorities", (string)null);
+                    b.ToTable("ProjectPriorities");
                 });
 
             modelBuilder.Entity("ECDBugTracker.Models.Ticket", b =>
@@ -415,7 +417,7 @@ namespace ECDBugTracker.data.Migrations
 
                     b.HasIndex("TicketTypeId");
 
-                    b.ToTable("Tickets", (string)null);
+                    b.ToTable("Tickets");
                 });
 
             modelBuilder.Entity("ECDBugTracker.Models.TicketAttachment", b =>
@@ -451,7 +453,7 @@ namespace ECDBugTracker.data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("TicketAttachments", (string)null);
+                    b.ToTable("TicketAttachments");
                 });
 
             modelBuilder.Entity("ECDBugTracker.Models.TicketComment", b =>
@@ -483,7 +485,7 @@ namespace ECDBugTracker.data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("TicketComments", (string)null);
+                    b.ToTable("TicketComments");
                 });
 
             modelBuilder.Entity("ECDBugTracker.Models.TicketHistory", b =>
@@ -522,7 +524,7 @@ namespace ECDBugTracker.data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("TicketHistories", (string)null);
+                    b.ToTable("TicketHistories");
                 });
 
             modelBuilder.Entity("ECDBugTracker.Models.TicketPriority", b =>
@@ -538,7 +540,7 @@ namespace ECDBugTracker.data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TicketPriorities", (string)null);
+                    b.ToTable("TicketPriorities");
                 });
 
             modelBuilder.Entity("ECDBugTracker.Models.TicketStatus", b =>
@@ -554,7 +556,7 @@ namespace ECDBugTracker.data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TicketStatuses", (string)null);
+                    b.ToTable("TicketStatuses");
                 });
 
             modelBuilder.Entity("ECDBugTracker.Models.TicketType", b =>
@@ -570,7 +572,7 @@ namespace ECDBugTracker.data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TicketTypes", (string)null);
+                    b.ToTable("TicketTypes");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

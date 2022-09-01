@@ -9,11 +9,11 @@ namespace ECDBugTracker.Models
         public int Id { get; set; }
         public int CompanyId { get; set; }
         [Required]
-        [StringLength(240, ErrorMessage = "The {0} must be at least {2} at most {1} characters long.", MinimumLength = 2)]
+        [StringLength(100)]
         [DisplayName("Project Name")]
         public string? Name { get; set; }
         [Required]
-        [StringLength(240, ErrorMessage = "The {0} must be at least {2} at most {1} characters long.", MinimumLength = 2)]
+        [StringLength(2000)]
         [DisplayName("Project Description")]
         public string? Description { get; set; }
 
