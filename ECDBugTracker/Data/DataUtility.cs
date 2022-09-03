@@ -47,6 +47,11 @@ namespace ECDBugTracker.Data
             return builder.ToString();
         }
 
+        public static DateTime GetPostGresDate(DateTime dateTime)
+        {
+            return DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
+        }
+
         public static async Task ManageDataAsync(IServiceProvider svcProvider)
         {
 

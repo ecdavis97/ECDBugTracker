@@ -9,9 +9,9 @@ namespace ECDBugTracker.Services
         private readonly string _defaultUserImageSrc = "/img/defaultProfile.png";
 
         //TODO: Blog Customizations
-        public string ConvertByteArrayToFile(byte[] fileData, string extension, int imageType)
+        public string ConvertByteArrayToFile(byte[] fileData, string extension, int? imageType)
         {
-            if (fileData == null || fileData.Length == 0)
+            if ((fileData == null || fileData.Length == 0) && imageType != null)
             {
                 switch (imageType)
                 {

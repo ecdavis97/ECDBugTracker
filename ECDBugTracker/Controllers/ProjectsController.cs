@@ -10,6 +10,8 @@ using ECDBugTracker.Models;
 using ECDBugTracker.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
+using ECDBugTracker.Models.ViewModels;
+using ECDBugTracker.Models.Enums;
 
 namespace ECDBugTracker.Controllers
 {
@@ -19,21 +21,86 @@ namespace ECDBugTracker.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IImageService _imageService;
         private readonly UserManager<BTUser> _userManager;
+        private readonly IBTProjectService _projectService;
+        private readonly IBTRoleService _roleService;
 
         public ProjectsController(ApplicationDbContext context,
                                   IImageService imageService,
-                                  UserManager<BTUser> userManager)
+                                  UserManager<BTUser> userManager,
+                                  IBTProjectService projectService,
+                                  IBTRoleService roleService)
         {
             _context = context;
             _imageService = imageService;
             _userManager = userManager;
+            _projectService = projectService;
+            _roleService = roleService;
         }
 
         // GET: Projects
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Project!.Include(p => p.Company).Include(p => p.ProjectPriority);
-            return View(await applicationDbContext.ToListAsync());
+
+            int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+
+            List<Project> projects = await _context.Project
+                                                   .Include(p => p.Company)
+                                                   .Include(p => p.ProjectPriority)
+                                                   .Where(p => p.CompanyId == companyId && !p.Archived)
+                                                   .ToListAsync();
+
+            return View(projects);
+
+        }
+        public async Task<IActionResult> ArchivedProjects()
+        {
+
+            int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+
+            List<Project> projects = await _projectService.GetAllProjectsByCompanyIdAsync(companyId);
+
+            return View(projects);
+
+        }
+
+        //Get AssignProjectManager
+        [Authorize(Roles="Admin")]
+        public async Task<IActionResult> AssignProjectManager(int? id)
+        {
+            if(id == null)
+            {
+                return NotFound();
+            }
+
+            AssignPMViewModel model = new();
+            int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+
+            model.Project = await _projectService.GetProjectByIdAsync(id.Value);
+            //service call to RoleService
+            model.PMList = new SelectList(await _roleService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId), "Id", "FullName");
+
+            return View(model);
+        }
+
+        //POST:
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AssignProjectManager(AssignPMViewModel model)
+        {
+            if (!string.IsNullOrEmpty(model.PMID))
+            {
+                //Add PM to project and TODO: Enhance this process
+                Project project = await _projectService.GetProjectByIdAsync(model.Project!.Id);
+                BTUser? projectManager = await _context.Users.FindAsync(model.PMID);
+
+                project.Members!.Add(projectManager!);
+
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            return RedirectToAction(nameof(AssignProjectManager), new { id = model.Project!.Id});
         }
 
         // GET: Projects/Details/5
@@ -71,15 +138,18 @@ namespace ECDBugTracker.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,CompanyId,Name,Description,Created,StartDate,EndDate,ProjectPriorityId,ImageFileName,ImageFileData,ImageContentType,Archived")] Project project)
+        public async Task<IActionResult> Create([Bind("Id,Name,Description,Created,StartDate,EndDate,ProjectPriorityId,ImageFileName,ImageFormFile,ImageFileData")] Project project)
         {
             if (ModelState.IsValid)
-            {                
+            { 
+                //TODO: make companyId retreival more efficient
 
                 //get company ID
                 project.CompanyId = (await _userManager.GetUserAsync(User)).CompanyId;
 
-                project.Created = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
+                project.Created = DataUtility.GetPostGresDate(DateTime.Now);
+                project.StartDate = DataUtility.GetPostGresDate(project.StartDate);
+                project.EndDate = DataUtility.GetPostGresDate(project.EndDate);
 
                 if (project.ImageFormFile != null)
                 {
@@ -87,15 +157,14 @@ namespace ECDBugTracker.Controllers
                     project.ImageContentType = project.ImageFormFile.ContentType;
                 }
 
+                //service call
+                await _projectService.AddProjectAsync(project);
 
-
-                _context.Add(project);
-                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
 
             ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Name", project.CompanyId);
-            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Id", project.ProjectPriorityId);
+            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Name", project.ProjectPriorityId);
             return View(project);
         }
 
@@ -113,7 +182,7 @@ namespace ECDBugTracker.Controllers
                 return NotFound();
             }
             ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Name", project.CompanyId);
-            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Id", project.ProjectPriorityId);
+            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Name", project.ProjectPriorityId);
             return View(project);
         }
 
@@ -122,9 +191,8 @@ namespace ECDBugTracker.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,CompanyId,Name,Description,Created,StartDate,EndDate,ProjectPriorityId,ImageFileName,ImageFileData,ImageContentType,Archived")] Project project)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,CompanyId,Name,Description,Created,StartDate,EndDate,ProjectPriorityId,ImageFileData,ImageFileType,ImageFormFile")] Project project)
         {
-            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Name");
 
             if (id != project.Id)
             {
@@ -135,8 +203,9 @@ namespace ECDBugTracker.Controllers
             {
                 try
                 {
-                    project.Created = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
-                    //project.StartDate = DateTime.SpecifyKind(DateTime.);
+                    project.Created = DateTime.SpecifyKind(project.Created, DateTimeKind.Utc);
+                    project.StartDate = DataUtility.GetPostGresDate(project.StartDate);
+                    project.EndDate = DataUtility.GetPostGresDate(project.EndDate);
 
                     if (project.ImageFormFile != null)
                     {
@@ -144,8 +213,8 @@ namespace ECDBugTracker.Controllers
                         project.ImageContentType = project.ImageFormFile.ContentType;
                     }
 
-                    _context.Update(project);
-                    await _context.SaveChangesAsync();
+                    //service call
+                    await _projectService.UpdateProjectAsync(project);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -161,22 +230,20 @@ namespace ECDBugTracker.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Name", project.CompanyId);
-            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Id", project.ProjectPriorityId);
+            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Name", project.ProjectPriorityId);
             return View(project);
         }
 
         // GET: Projects/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Archive(companyId)
         {
             if (id == null || _context.Project == null)
             {
                 return NotFound();
             }
 
-            var project = await _context.Project
-                .Include(p => p.Company)
-                .Include(p => p.ProjectPriority)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            await _projectService.GetArchiveProjectsByCompanyIdAsync(companyId);
+
             if (project == null)
             {
                 return NotFound();
@@ -186,23 +253,22 @@ namespace ECDBugTracker.Controllers
         }
 
         // POST: Projects/Delete/5
-        [HttpPost, ActionName("Delete")]
+        [HttpPost, ActionName("Archive")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> ArchiveConfirmed(int id)
         {
             if (_context.Project == null)
             {
                 return Problem("Entity set 'ApplicationDbContext.Project'  is null.");
             }
-            var project = await _context.Project.FindAsync(id);
-            if (project != null)
-            {
-                _context.Project.Remove(project);
-            }
+            //service call 
+            await _projectService.ArchiveProjectAsync(id);
             
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
+        //replicate the archive to make a restore function
 
         private bool ProjectExists(int id)
         {

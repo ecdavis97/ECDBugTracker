@@ -7,16 +7,25 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ECDBugTracker.Data;
 using ECDBugTracker.Models;
+using ECDBugTracker.Models.Enums;
+using Microsoft.AspNetCore.Identity;
+using ECDBugTracker.Services.Interfaces;
 
 namespace ECDBugTracker.Controllers
 {
     public class TicketsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<BTUser> _userManager;
+        private readonly IImageService _imageService;
 
-        public TicketsController(ApplicationDbContext context)
+        public TicketsController(ApplicationDbContext context,
+                                 IImageService imageService,
+                                 UserManager<BTUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
+            _imageService = imageService;
         }
 
         // GET: Tickets
@@ -53,11 +62,11 @@ namespace ECDBugTracker.Controllers
         // GET: Tickets/Create
         public IActionResult Create()
         {
-            ViewData["DeveloperUserId"] = new SelectList(_context.Users, "Id", "Id");
+            //ViewData["DeveloperUserId"] = new SelectList(_context.Users, "Id", "Id");
             ViewData["ProjectId"] = new SelectList(_context.Project, "Id", "Description");
-            ViewData["SubmitterUserId"] = new SelectList(_context.Users, "Id", "Id");
+            //ViewData["SubmitterUserId"] = new SelectList(_context.Users, "Id", "Id");
             ViewData["TicketPriorityId"] = new SelectList(_context.TicketPriorities, "Id", "Id");
-            ViewData["TicketStatusId"] = new SelectList(_context.TicketStatuses, "Id", "Id");
+            //ViewData["TicketStatusId"] = new SelectList(_context.TicketStatuses, "Id", "Id");
             ViewData["TicketTypeId"] = new SelectList(_context.TicketTypes, "Id", "Id");
             return View();
         }
@@ -71,15 +80,21 @@ namespace ECDBugTracker.Controllers
         {
             if (ModelState.IsValid)
             {
+                int statusId = (await _context.TicketStatuses.FirstOrDefaultAsync(s => s.Name == nameof(BTTicketStatuses.New)))!.Id;
+
+                ticket.TicketStatusId = statusId;
+                ticket.Created = DataUtility.GetPostGresDate(DateTime.Now);
+                ticket.SubmitterUserId = _userManager.GetUserId(User);
+
                 _context.Add(ticket);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["DeveloperUserId"] = new SelectList(_context.Users, "Id", "Id", ticket.DeveloperUserId);
+            //ViewData["DeveloperUserId"] = new SelectList(_context.Users, "Id", "Id", ticket.DeveloperUserId);
             ViewData["ProjectId"] = new SelectList(_context.Project, "Id", "Description", ticket.ProjectId);
-            ViewData["SubmitterUserId"] = new SelectList(_context.Users, "Id", "Id", ticket.SubmitterUserId);
+            //ViewData["SubmitterUserId"] = new SelectList(_context.Users, "Id", "Id", ticket.SubmitterUserId);
             ViewData["TicketPriorityId"] = new SelectList(_context.TicketPriorities, "Id", "Id", ticket.TicketPriorityId);
-            ViewData["TicketStatusId"] = new SelectList(_context.TicketStatuses, "Id", "Id", ticket.TicketStatusId);
+            //ViewData["TicketStatusId"] = new SelectList(_context.TicketStatuses, "Id", "Id", ticket.TicketStatusId);
             ViewData["TicketTypeId"] = new SelectList(_context.TicketTypes, "Id", "Id", ticket.TicketTypeId);
             return View(ticket);
         }

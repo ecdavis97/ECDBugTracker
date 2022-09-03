@@ -17,24 +17,22 @@ namespace ECDBugTracker.Models
         [DisplayName("Project Description")]
         public string? Description { get; set; }
 
-        [DataType(DataType.DateTime)]
+        [DataType(DataType.Date)]
         [DisplayName("Date Created")]
         public DateTime Created { get; set; }
 
-        [DataType(DataType.DateTime)]
+        [DataType(DataType.Date)]
         [DisplayName("Project Start Date")]
         public DateTime StartDate { get; set; }
 
-        [DataType(DataType.DateTime)]
+        [DataType(DataType.Date)]
         [DisplayName("Project End Date")]
         public DateTime EndDate { get; set; }
         public int ProjectPriorityId { get; set; }
 
         [NotMapped]
+        [DataType(DataType.Upload)]
         public virtual IFormFile? ImageFormFile { get; set; }
-
-        [DisplayName("File Name")]
-        public string? ImageFileName { get; set; }
 
         [DisplayName("Project Image")]
         public byte[]? ImageFileData { get; set; }

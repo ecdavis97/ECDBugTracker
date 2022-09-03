@@ -21,7 +21,10 @@ builder.Services.AddIdentity<BTUser, IdentityRole>(options => options.SignIn.Req
                 .AddDefaultUI()
                 .AddDefaultTokenProviders();
 
+//custom services
 builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddScoped<IBTProjectService, BTProjectService>();
+builder.Services.AddScoped<IBTRoleService, BTRoleService>();
 
 builder.Services.AddMvc();
 
