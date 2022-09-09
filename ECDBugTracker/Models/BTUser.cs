@@ -15,7 +15,7 @@ namespace ECDBugTracker.Models
         [StringLength(50, ErrorMessage = "The {0} must be at least {2} and a maximum of {1} characters.", MinimumLength = 2)]
         public string? LastName { get; set; }
         [NotMapped]
-        public string? FullName { get; set; }
+        public string? FullName { get {return $"{FirstName} {LastName}"; } }
 
         [NotMapped]
         public IFormFile? ImageFormFile { get; set; }

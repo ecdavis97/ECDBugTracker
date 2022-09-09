@@ -1,4 +1,5 @@
 using ECDBugTracker.Data;
+using ECDBugTracker.Extensions;
 using ECDBugTracker.Models;
 using ECDBugTracker.Services;
 using ECDBugTracker.Services.Interfaces;
@@ -18,6 +19,7 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddIdentity<BTUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddClaimsPrincipalFactory<BTUserClaimsPrincipalFactory>()
                 .AddDefaultUI()
                 .AddDefaultTokenProviders();
 

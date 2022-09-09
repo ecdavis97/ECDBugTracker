@@ -32,7 +32,7 @@ namespace ECDBugTracker.Models
 
         [NotMapped]
         [DataType(DataType.Upload)]
-        public virtual IFormFile? ImageFormFile { get; set; }
+        public IFormFile? ImageFormFile { get; set; }
 
         [DisplayName("Project Image")]
         public byte[]? ImageFileData { get; set; }

@@ -3,10 +3,13 @@
 @using ECDBugTracker.Services.Interfaces
 @using ECDBugTracker.Models.Enums
 
-@inject IImageService ImageService
+@inject IImageService _ImageService;
+@inject IBTProjectService _ProjectService;
+@inject IBTRoleService _RoleService;
 
 @{
     ViewData["Title"] = "Index";
+
 }
 
 <h1>Index</h1>
@@ -33,6 +36,9 @@
                 @Html.DisplayNameFor(model => model.EndDate)
             </th>
             <th>
+                PM
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.ImageFormFile)
             </th>
             <th>
@@ -48,42 +54,60 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Created)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.StartDate)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.EndDate)
-            </td>
-            <td>
-                <img src='@ImageService.ConvertByteArrayToFile(item.ImageFileData!, item.ImageContentType!,(int)DefaultImage.Project)' class="square-img rounded-start" style="height: 120px; width: 120px" alt="...">
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Archived)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Company!.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ProjectPriority!.Id)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="AssignProjectManager" asp-route-id="@item.Id" class="btn btn-outline-dark btn-sm">Assign Project Manager</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Archive</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Description)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Created)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.StartDate)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.EndDate)
+                </td>
+
+                @{
+                    BTUser projectPM = await _ProjectService.GetProjectManagerAsync(item.Id)!;
+                    if (projectPM != null)
+                    {
+                        <td>@projectPM.FullName</td>
+                    }
+                    else
+                    {
+                        <td>
+                            <a asp-action="AssignProjectManager" asp-route-id="@item.Id" class="btn btn-outline-dark btn-sm">Assign Project Manager</a>
+                        </td>
+                    }
+
+                }
+
+
+                <td>
+                    <img src='@_ImageService.ConvertByteArrayToFile(item.ImageFileData!, item.ImageContentType!,(int)DefaultImage.Project)' class="square-img rounded-start" style="height: 120px; width: 120px" alt="...">
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Archived)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Company!.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ProjectPriority!.Id)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    @*<a asp-action="AssignProjectManager" asp-route-id="@item.Id" class="btn btn-outline-dark btn-sm">Assign Project Manager</a> |*@
+                    <a asp-action="Archive" asp-route-id="@item.Id">Archive</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>

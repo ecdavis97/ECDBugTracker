@@ -210,6 +210,34 @@ namespace ECDBugTracker.Data
                 throw;
             }
 
+            //Seed Default ProjectManager2 for company 1 User
+            defaultUser = new BTUser
+            {
+                UserName = "BarbaraAppUser@bugtracker.com",
+                Email = "BarbaraAppUser@bugtracker.com",
+                FirstName = "Barbara",
+                LastName = "Appuser",
+                EmailConfirmed = true,
+                CompanyId = company1Id
+            };
+            try
+            {
+                var user = await userManager.FindByEmailAsync(defaultUser.Email);
+                if (user == null)
+                {
+                    await userManager.CreateAsync(defaultUser, "Abc&123!");
+                    await userManager.AddToRoleAsync(defaultUser, nameof(BTRoles.ProjectManager));
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("*************  ERROR  *************");
+                Console.WriteLine("Error Seeding Default ProjectManager1 User.");
+                Console.WriteLine(ex.Message);
+                Console.WriteLine("***********************************");
+                throw;
+            }
+
 
             //Seed Default ProjectManager2 User
             defaultUser = new BTUser
