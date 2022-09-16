@@ -1,0 +1,31 @@
+﻿@model ECDBugTracker.Models.ViewModels.AssignDeveloperViewModel
+
+@{
+    ViewData["Title"] = "Assign Developer";
+}
+
+<h1>Project : @Model.Ticket?.Title</h1>
+<h4>Assign Developer</h4>
+<hr />
+<div class="row card">
+    <div class="col-md-4">
+        <form method="post" asp-action="AssignDeveloper" asp-controller="Tickets" asp-route-id="@Model.Ticket!.Id">
+            <input type="hidden" asp-for="Ticket!.Id" />
+            <input type="hidden" asp-for="Ticket!.ProjectId" />
+
+            <h2>@Model.Ticket?.Title </h2>
+
+            <p>@Model.Ticket?.Description </p>
+
+            <div class="form-group">
+                <label>Add Developer</label>
+                <select asp-for="DeveloperID" class="form-control" asp-items="@Model.DeveloperList"></select>
+                <span asp-validation-for="DeveloperID" class="text-danger"></span>
+            </div>
+                <input type="submit" value="Assign" class="btn btn-primary" />
+        </form>
+    </div>
+</div>
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>

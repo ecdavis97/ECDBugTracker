@@ -159,7 +159,7 @@ namespace ECDBugTracker.data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CompanyId")
+                    b.Property<int>("CompanyId")
                         .HasColumnType("integer");
 
                     b.Property<Guid>("CompanyToken")
@@ -196,7 +196,7 @@ namespace ECDBugTracker.data.Migrations
                     b.Property<string>("Message")
                         .HasColumnType("text");
 
-                    b.Property<int?>("ProjectId")
+                    b.Property<int>("ProjectId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
@@ -233,7 +233,7 @@ namespace ECDBugTracker.data.Migrations
                     b.Property<int>("NotificationTypeId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("ProjectId")
+                    b.Property<int?>("ProjectId")
                         .HasColumnType("integer");
 
                     b.Property<string>("RecipientId")
@@ -244,7 +244,7 @@ namespace ECDBugTracker.data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("TicketId")
+                    b.Property<int?>("TicketId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Title")
@@ -330,7 +330,7 @@ namespace ECDBugTracker.data.Migrations
 
                     b.HasIndex("ProjectPriorityId");
 
-                    b.ToTable("Project");
+                    b.ToTable("Projects");
                 });
 
             modelBuilder.Entity("ECDBugTracker.Models.ProjectPriority", b =>
@@ -732,7 +732,9 @@ namespace ECDBugTracker.data.Migrations
                 {
                     b.HasOne("ECDBugTracker.Models.Company", "Company")
                         .WithMany("Invites")
-                        .HasForeignKey("CompanyId");
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("ECDBugTracker.Models.BTUser", "Invitee")
                         .WithMany()
@@ -746,7 +748,9 @@ namespace ECDBugTracker.data.Migrations
 
                     b.HasOne("ECDBugTracker.Models.Project", "Project")
                         .WithMany()
-                        .HasForeignKey("ProjectId");
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Company");
 
@@ -767,9 +771,7 @@ namespace ECDBugTracker.data.Migrations
 
                     b.HasOne("ECDBugTracker.Models.Project", "Project")
                         .WithMany()
-                        .HasForeignKey("ProjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ProjectId");
 
                     b.HasOne("ECDBugTracker.Models.BTUser", "Recipient")
                         .WithMany()
@@ -785,9 +787,7 @@ namespace ECDBugTracker.data.Migrations
 
                     b.HasOne("ECDBugTracker.Models.Ticket", "Ticket")
                         .WithMany()
-                        .HasForeignKey("TicketId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("TicketId");
 
                     b.Navigation("NotificationType");
 

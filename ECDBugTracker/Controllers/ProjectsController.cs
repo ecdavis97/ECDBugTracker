@@ -40,13 +40,13 @@ namespace ECDBugTracker.Controllers
         }
 
         // GET: Projects
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> MyProjects()
         {
 
             //int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
             int companyId = User.Identity!.GetCompanyId();
 
-            List<Project> projects = await _context.Project
+            List<Project> projects = await _context.Projects
                                                    .Include(p => p.Company)
                                                    .Include(p => p.ProjectPriority)
                                                    .Where(p => p.CompanyId == companyId && !p.Archived)
@@ -67,6 +67,76 @@ namespace ECDBugTracker.Controllers
 
         }
 
+
+        #region GET: ADD MEMBERS TO PROJECT
+        //GET Add member to project
+        [Authorize(Roles = "Admin,ProjectManager")]
+        public async Task<IActionResult> AssignProjectMembers(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            AddMemberViewModel model = new();
+
+            int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+
+            Project project = await _projectService.GetProjectByIdAsync(id.Value);
+            model.Project = project;
+            model.MemberIds = project.Members!.Select(m => m.Id).ToList();
+
+            model.MemberList = new MultiSelectList(await _context.Users.Where(u => u.CompanyId == companyId).ToListAsync(), "Id", "FullName", model.MemberIds);
+
+            return View(model);
+        }
+
+        #endregion
+        #region POST: ADD MEMBER TO PROJECT
+        //POST Add member to project
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,ProjectManager")]
+        public async Task<IActionResult> AssignProjectMembers(AddMemberViewModel model)
+        {
+            if (model.MemberIds != null && model.MemberIds.Count > 0)
+            {
+
+                Project selectedProject = await _projectService.GetProjectByIdAsync(model.Project!.Id);
+
+                foreach(BTUser member in selectedProject.Members!)
+                {
+                    await _projectService.RemoveUserFromProjectAsync(member, selectedProject.Id);
+                }
+
+                foreach (string memberId in model.MemberIds)
+                {
+
+                    BTUser user = await _userManager.FindByIdAsync(memberId);
+
+                    await _projectService.AddUserToProjectAsync(user, model.Project!.Id);
+
+                }
+
+                return RedirectToAction(nameof(MyProjects));
+            }
+
+            ModelState.AddModelError("MemberIds", "No Members chosen! Please select Project Members.");
+
+
+            int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
+
+            Project project = await _projectService.GetProjectByIdAsync(model.Project!.Id);
+            model.Project = project;
+            model.MemberIds = project.Members!.Select(m => m.Id).ToList();
+
+            model.MemberList = new MultiSelectList(await _context.Users.Where(u => u.CompanyId == companyId).ToListAsync(), "Id", "FullName", model.MemberIds);
+
+            return View(model);
+
+        }
+
+        #endregion
 
         //Get AssignProjectManager
         [Authorize(Roles="Admin")]
@@ -124,12 +194,13 @@ namespace ECDBugTracker.Controllers
         // GET: Projects/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Project == null)
+            if (id == null || _context.Projects == null)
             {
                 return NotFound();
             }
 
-            var project = await _context.Project
+            var project = await _context.Projects
+                .Include(p => p.Members)
                 .Include(p => p.Company)
                 .Include(p => p.ProjectPriority)
                 .Include(p => p.Tickets)
@@ -143,9 +214,6 @@ namespace ECDBugTracker.Controllers
         }
 
 
-
-
-
         // GET: Projects/Create
         [Authorize(Roles="Admin, ProjectManager")]
         public async Task<IActionResult> Create()
@@ -154,7 +222,10 @@ namespace ECDBugTracker.Controllers
 
             int companyId = (await _userManager.GetUserAsync(User)).CompanyId;
 
-            model.Project = new Project();                       
+            model.Project = new();
+            
+            model.Project.StartDate = DataUtility.GetPostGresDate(DateTime.UtcNow);
+            model.Project.EndDate = DataUtility.GetPostGresDate(DateTime.UtcNow);
 
             //service call to RoleService to get all PMs for the company 
             model.PMList = new SelectList(await _roleService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId), "Id", "FullName");
@@ -177,7 +248,7 @@ namespace ECDBugTracker.Controllers
                 //TODO: make companyId retreival more efficient
 
                 //get company ID
-                model.Project.CompanyId = (await _userManager.GetUserAsync(User)).CompanyId;
+                model.Project!.CompanyId = (await _userManager.GetUserAsync(User)).CompanyId;
 
                 model.Project.Created = DataUtility.GetPostGresDate(DateTime.Now);
                 model.Project.StartDate = DataUtility.GetPostGresDate(model.Project.StartDate);
@@ -190,16 +261,20 @@ namespace ECDBugTracker.Controllers
                 }
 
                 //service call
-                await _projectService.AddProjectAsync(model.Project);
+                if (!User.IsInRole(nameof(BTRoles.DemoUser)))
+                {
+                    await _projectService.AddProjectAsync(model.Project);
+                }
+
 
                 //save selected PM to project
-                await _projectService.AddProjectManagerAsync(model.PMID, model.Project.Id);
+                await _projectService.AddProjectManagerAsync(model.PMID!, model.Project.Id);
 
 
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(MyProjects));
             }
 
-            ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Name", model.Project.CompanyId);
+            ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Name", model.Project!.CompanyId);
             ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Name", model.Project.ProjectPriorityId);
             return View(model.Project);
         }
@@ -207,7 +282,7 @@ namespace ECDBugTracker.Controllers
         // GET: Projects/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Project == null)
+            if (id == null)
             {
                 return NotFound();
             }
@@ -219,7 +294,7 @@ namespace ECDBugTracker.Controllers
             //service call to RoleService to get all PMs for the company 
             model.PMList = new SelectList(await _roleService.GetUsersInRoleAsync(nameof(BTRoles.ProjectManager), companyId), "Id", "FullName");
 
-            model.Project = await _context.Project.FindAsync(id);
+            model.Project = await _context.Projects.FindAsync(id);
             if (model.Project == null)
             {
                 return NotFound();
@@ -242,7 +317,7 @@ namespace ECDBugTracker.Controllers
         public async Task<IActionResult> Edit(int id, AssignPMViewModel model)
         {
 
-            if (model.Project.Id != model.Project.Id)
+            if (model.Project!.Id != model.Project.Id)
             {
                 return NotFound();
             }
@@ -265,7 +340,7 @@ namespace ECDBugTracker.Controllers
                     //service call
                     await _projectService.UpdateProjectAsync(model.Project);
 
-                    await _projectService.AddProjectManagerAsync(model.PMID, model.Project.Id);
+                    await _projectService.AddProjectManagerAsync(model.PMID!, model.Project.Id);
 
                 }
                 catch (DbUpdateConcurrencyException)
@@ -289,10 +364,6 @@ namespace ECDBugTracker.Controllers
         // GET: Projects/Archive/5
         public async Task<IActionResult> Archive(int id)
         {
-            if (_context.Project == null) 
-            {
-                return NotFound();
-            }
 
             var project = await _projectService.GetProjectByIdAsync(id);
             
@@ -309,10 +380,6 @@ namespace ECDBugTracker.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ArchiveConfirmed(int id)
         {
-            if (_context.Project == null)
-            {
-                return Problem("Entity set 'ApplicationDbContext.Project'  is null.");
-            }
             //service call 
             await _projectService.ArchiveProjectAsync(id);
             
@@ -324,10 +391,6 @@ namespace ECDBugTracker.Controllers
         // GET: Projects/Restore/5
         public async Task<IActionResult> Restore(int id)
         {
-            if (_context.Project == null)
-            {
-                return NotFound();
-            }
 
             var project = await _projectService.GetProjectByIdAsync(id);
 
@@ -344,10 +407,6 @@ namespace ECDBugTracker.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RestoreConfirmed(int id)
         {
-            if (_context.Project == null)
-            {
-                return Problem("Entity set 'ApplicationDbContext.Project'  is null.");
-            }
             //service call 
             await _projectService.RestoreProjectAsync(id);
 
@@ -372,7 +431,7 @@ namespace ECDBugTracker.Controllers
 
         private bool ProjectExists(int id)
         {
-          return (_context.Project?.Any(e => e.Id == id)).GetValueOrDefault();
+          return (_context.Projects?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

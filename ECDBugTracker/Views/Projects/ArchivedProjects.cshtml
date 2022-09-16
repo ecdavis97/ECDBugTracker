@@ -9,12 +9,14 @@
     ViewData["Title"] = "Index";
 }
 
+<link href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css" rel="stylesheet" />
+
 <h1>Archived Projects</h1>
 
 <p>
     <a asp-action="Archive">Create New</a>
 </p>
-<table class="table">
+<table id="archived" class="table">
     <thead>
         <tr>
             <th>
@@ -86,3 +88,13 @@
         }
     </tbody>
 </table>
+
+
+@section scripts{
+        <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+        <script>
+            $(document).ready(function () {
+            $('#archived').DataTable();
+            });
+        </script>
+}

@@ -743,17 +743,17 @@ namespace ECDBugTracker.Data
                      }
                 };
 
-                var dbProjects = context.Project!.Select(c => c.Name).ToList();
-                await context.Project!.AddRangeAsync(projects.Where(c => !dbProjects.Contains(c.Name)));
+                var dbProjects = context.Projects!.Select(c => c.Name).ToList();
+                await context.Projects!.AddRangeAsync(projects.Where(c => !dbProjects.Contains(c.Name)));
                 await context.SaveChangesAsync();
 
 
                 //Get company Ids
-                portfolioId = context.Project.FirstOrDefault(p => p.Name == "Build a Personal Porfolio")!.Id;
-                blogId = context.Project.FirstOrDefault(p => p.Name == "Build a supplemental Blog Web Application")!.Id;
-                bugtrackerId = context.Project.FirstOrDefault(p => p.Name == "Build an Issue Tracking Web Application")!.Id;
-                movieId = context.Project.FirstOrDefault(p => p.Name == "Build a Movie Information Web Application")!.Id;
-                addressbookId = context.Project.FirstOrDefault(p => p.Name == "Build an Address Book Web Application")!.Id;
+                portfolioId = context.Projects.FirstOrDefault(p => p.Name == "Build a Personal Porfolio")!.Id;
+                blogId = context.Projects.FirstOrDefault(p => p.Name == "Build a supplemental Blog Web Application")!.Id;
+                bugtrackerId = context.Projects.FirstOrDefault(p => p.Name == "Build an Issue Tracking Web Application")!.Id;
+                movieId = context.Projects.FirstOrDefault(p => p.Name == "Build a Movie Information Web Application")!.Id;
+                addressbookId = context.Projects.FirstOrDefault(p => p.Name == "Build an Address Book Web Application")!.Id;
 
             }
             catch (Exception ex)

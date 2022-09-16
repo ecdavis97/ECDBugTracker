@@ -119,7 +119,7 @@ namespace ECDBugTracker.Services
         {
             try
             {
-                List<Project> projects = await _context.Project
+                List<Project> projects = await _context.Projects
                                                        .Where(p => p.CompanyId == companyId && !p.Archived)
                                                        .Include(p => p.Company)
                                                        .Include(p => p.ProjectPriority)
@@ -137,7 +137,7 @@ namespace ECDBugTracker.Services
         {
             try
             {
-                List<Project> projects = await _context.Project
+                List<Project> projects = await _context.Projects
                                                        .Where(p => p.CompanyId == companyId && p.Archived)
                                                        .Include(p => p.Company)
                                                        .Include(p => p.ProjectPriority)
@@ -154,13 +154,13 @@ namespace ECDBugTracker.Services
 
         public async Task<Project> GetProjectByIdAsync(int projectId)
         {
-            Project? project = await _context.Project
+            Project? project = await _context.Projects
                                              .Include(p => p.Company)
                                              .Include(p => p.Members)
                                              .Include(p => p.Tickets)
                                              .Include(p => p.ProjectPriority)
                                              .FirstOrDefaultAsync(m => m.Id == projectId);
-            return project;
+            return project!;
         }
 
         public async Task<List<Project>> GetUnassignedProjectsAsync(int companyId)
@@ -192,7 +192,7 @@ namespace ECDBugTracker.Services
             {
                 Project? project = await GetProjectByIdAsync(projectId);
 
-                foreach (BTUser member in project.Members)
+                foreach (BTUser member in project.Members!)
                 {
                     if(await _roleService.IsUserInRoleAsync(member, nameof(BTRoles.ProjectManager)))
                     {
@@ -317,5 +317,30 @@ namespace ECDBugTracker.Services
             }
         }
 
+        public async Task<List<BTUser>> GetProjectMembersByRoleAsync(int projectId, string roleName)
+        {
+            try
+            {
+                Project? project = await _context.Projects
+                                                        .Include(p => p.Members)
+                                                        .FirstOrDefaultAsync(p => p.Id == projectId);
+                List<BTUser> members = new();
+
+                foreach(BTUser bTUser in project!.Members!)
+                {
+                    if (await _roleService.IsUserInRoleAsync(bTUser, roleName))
+                    {
+                        members.Add(bTUser);
+                    }
+                }
+
+                return members;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
     }
 }

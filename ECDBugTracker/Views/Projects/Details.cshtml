@@ -77,13 +77,30 @@
             @Html.DisplayFor(model => model.ProjectPriority.Id)
         </dd>
     </dl>
-    @{
-        BTUser projectPM = await _ProjectService.GetProjectManagerAsync(Model.Id)!;
-        if (projectPM != null)
+
+    <ul>
+        @foreach (BTUser member in Model.Members!)
         {
-            <td>@projectPM.FullName</td>
+            <li>@member.FullName</li>
         }
-    }
+    </ul>
+
+    <ul>
+        @foreach(Ticket ticket in Model.Tickets!)
+        {
+            <li>@ticket.Title</li>
+            <li>@ticket.TicketStatus</li>
+            @if(ticket.DeveloperUser != null)
+            {
+                <li>@ticket.DeveloperUser!.FullName</li>
+            }else
+            {
+                <li>Unassigned Ticket</li>
+            }
+        }
+    </ul>
+
+
 </div>
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |

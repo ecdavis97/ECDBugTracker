@@ -42,12 +42,6 @@
                 <label asp-for="Project!.ProjectPriorityId" class="control-label"></label>
                 <select asp-for="Project!.ProjectPriorityId" class="form-control" asp-items="ViewBag.ProjectPriorityId"></select>
             </div>
-            <div class="form-group">
-                <label class="control-label">Select Project Manager</label>
-                <select asp-for="PMID" class="form-control" asp-items="@Model.PMList">
-                    <option></option>
-                </select>
-            </div>
 
             <div class="col-lg-6 col-md-6 col-12">
                 <div class="form-group">

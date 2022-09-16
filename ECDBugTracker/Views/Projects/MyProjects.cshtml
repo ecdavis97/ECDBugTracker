@@ -8,16 +8,18 @@
 @inject IBTRoleService _RoleService;
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "MyProjects";
 
 }
 
-<h1>Index</h1>
+<link href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css" rel="stylesheet" />
+
+<h1>My Projects</h1>
 
 <p>
     <a asp-action="Create">Create New</a>
 </p>
-<table class="table">
+<table id="myProjects" class="table">
     <thead>
         <tr>
             <th>
@@ -104,6 +106,7 @@
                 <td>
                     <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
                     <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    <a asp-action="AssignProjectMembers" asp-route-id="@item.Id">Assign Project Members</a> |
                     @*<a asp-action="AssignProjectManager" asp-route-id="@item.Id" class="btn btn-outline-dark btn-sm">Assign Project Manager</a> |*@
                     <a asp-action="Archive" asp-route-id="@item.Id">Archive</a>
                 </td>
@@ -111,3 +114,11 @@
         }
     </tbody>
 </table>
+@section scripts{
+    <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#myProjects').DataTable();
+        });
+    </script>
+}

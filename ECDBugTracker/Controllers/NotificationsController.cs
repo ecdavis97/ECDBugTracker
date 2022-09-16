@@ -53,7 +53,7 @@ namespace ECDBugTracker.Controllers
         public IActionResult Create()
         {
             ViewData["NotificationTypeId"] = new SelectList(_context.NotificationTypes, "Id", "Id");
-            ViewData["ProjectId"] = new SelectList(_context.Project, "Id", "Description");
+            ViewData["ProjectId"] = new SelectList(_context.Projects, "Id", "Description");
             ViewData["RecipientId"] = new SelectList(_context.Users, "Id", "Id");
             ViewData["SenderId"] = new SelectList(_context.Users, "Id", "Id");
             ViewData["TicketId"] = new SelectList(_context.Tickets, "Id", "Description");
@@ -74,7 +74,7 @@ namespace ECDBugTracker.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewData["NotificationTypeId"] = new SelectList(_context.NotificationTypes, "Id", "Id", notification.NotificationTypeId);
-            ViewData["ProjectId"] = new SelectList(_context.Project, "Id", "Description", notification.ProjectId);
+            ViewData["ProjectId"] = new SelectList(_context.Projects, "Id", "Description", notification.ProjectId);
             ViewData["RecipientId"] = new SelectList(_context.Users, "Id", "Id", notification.RecipientId);
             ViewData["SenderId"] = new SelectList(_context.Users, "Id", "Id", notification.SenderId);
             ViewData["TicketId"] = new SelectList(_context.Tickets, "Id", "Description", notification.TicketId);
@@ -95,7 +95,7 @@ namespace ECDBugTracker.Controllers
                 return NotFound();
             }
             ViewData["NotificationTypeId"] = new SelectList(_context.NotificationTypes, "Id", "Id", notification.NotificationTypeId);
-            ViewData["ProjectId"] = new SelectList(_context.Project, "Id", "Description", notification.ProjectId);
+            ViewData["ProjectId"] = new SelectList(_context.Projects, "Id", "Description", notification.ProjectId);
             ViewData["RecipientId"] = new SelectList(_context.Users, "Id", "Id", notification.RecipientId);
             ViewData["SenderId"] = new SelectList(_context.Users, "Id", "Id", notification.SenderId);
             ViewData["TicketId"] = new SelectList(_context.Tickets, "Id", "Description", notification.TicketId);
@@ -135,7 +135,7 @@ namespace ECDBugTracker.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewData["NotificationTypeId"] = new SelectList(_context.NotificationTypes, "Id", "Id", notification.NotificationTypeId);
-            ViewData["ProjectId"] = new SelectList(_context.Project, "Id", "Description", notification.ProjectId);
+            ViewData["ProjectId"] = new SelectList(_context.Projects, "Id", "Description", notification.ProjectId);
             ViewData["RecipientId"] = new SelectList(_context.Users, "Id", "Id", notification.RecipientId);
             ViewData["SenderId"] = new SelectList(_context.Users, "Id", "Id", notification.SenderId);
             ViewData["TicketId"] = new SelectList(_context.Tickets, "Id", "Description", notification.TicketId);

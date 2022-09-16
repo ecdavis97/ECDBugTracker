@@ -11,6 +11,7 @@ namespace ECDBugTracker.Services.Interfaces
         public Task<List<Project>> GetAllProjectsByCompanyIdAsync(int companyId);
         public Task<List<Project>> GetArchiveProjectsByCompanyIdAsync(int companyId);
         public Task<Project> GetProjectByIdAsync(int projectId);
+        public Task<List<BTUser>> GetProjectMembersByRoleAsync(int projectId, string roleName);
         public Task<BTUser>? GetProjectManagerAsync(int projectId);
         public Task<List<Project>> GetUnassignedProjectsAsync(int companyId);
         public Task<bool> IsUserOnProjectAsync(string userId, int projectId);

@@ -14,7 +14,7 @@ namespace ECDBugTracker.Data
         public virtual DbSet<Invite> Invites { get; set; }
         public virtual DbSet<Notification> Notifications { get; set; }
         public virtual DbSet<NotificationType> NotificationTypes { get; set; }
-        public virtual DbSet<Project> Project { get; set; }
+        public virtual DbSet<Project> Projects { get; set; }
         public virtual DbSet<ProjectPriority> ProjectPriorities { get; set; }
         public virtual DbSet<Ticket>? Tickets { get; set; }
         public virtual DbSet<TicketAttachment> TicketAttachments { get; set; }

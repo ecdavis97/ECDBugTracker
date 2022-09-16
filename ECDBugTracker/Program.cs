@@ -4,9 +4,11 @@ using ECDBugTracker.Models;
 using ECDBugTracker.Services;
 using ECDBugTracker.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+var connectionString = builder.Configuration.GetConnectionString("ApplicationDbContextConnection") ?? throw new InvalidOperationException("Connection string 'ApplicationDbContextConnection' not found.");
 
 // Add services to the container.
 //var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -14,6 +16,9 @@ var connectionString = DataUtility.GetConnectionString(builder.Configuration);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString,
     o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
+
+builder.Services.AddDefaultIdentity<BTUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -27,6 +32,16 @@ builder.Services.AddIdentity<BTUser, IdentityRole>(options => options.SignIn.Req
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<IBTProjectService, BTProjectService>();
 builder.Services.AddScoped<IBTRoleService, BTRoleService>();
+builder.Services.AddScoped<IBTTicketService, BTTicketService>();
+builder.Services.AddScoped<IBTCompanyService, BTCompanyService>();
+builder.Services.AddScoped<IEmailSender, BTEmailService>();
+builder.Services.AddScoped<IBTInviteService, BTInviteService>();
+builder.Services.AddScoped<IBTTicketService, BTTicketService>();
+builder.Services.AddScoped<IBTTicketHistoryService, BTTicketHistoryService>();
+builder.Services.AddScoped<IBTNotificationService, BTNotificationService>();
+
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
+
 
 builder.Services.AddMvc();
 
@@ -57,7 +72,7 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=Dashboard}/{id?}");
 app.MapRazorPages();
 
 app.Run();

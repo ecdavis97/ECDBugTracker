@@ -20,32 +20,13 @@ namespace ECDBugTracker.Services
 
         public async Task<bool> AddDeveloperToTicketAsync(string userId, int ticketId)
         {
-            try
-            {
-                BTUser? currentDev = await GetDeveloperAsync(ticketId);
-                BTUser? selectedDev = await _context.Users.FindAsync(userId);
 
-                if(currentDev != null)
-                {
-                    await RemoveDeveloperAsync(ticketId);
-                }
+            Ticket? ticket = await _context.Tickets!.FindAsync(ticketId);
+            ticket!.DeveloperUserId = userId;
 
-                try
-                {
-                    await AddDeveloperToTicketAsync(selectedDev.Id, ticketId);
-                    return true;
-                }
-                catch (Exception)
-                {
+            await _context.SaveChangesAsync();
 
-                    throw;
-                }
-            }
-            catch (Exception)
-            {
-
-                throw;
-            }
+            return true;
         }
 
         public async Task AddTicketAsync(Ticket ticket)
@@ -68,11 +49,11 @@ namespace ECDBugTracker.Services
             {
                 Ticket? ticket = await GetTicketByIdAsync(ticketId);
 
-                bool onTicket = ticket.Project.Members.Any(m => m.Id == user.Id);
+                bool onTicket = ticket.Project!.Members!.Any(m => m.Id == user.Id);
 
                 if (onTicket)
                 {
-                    ticket.Project.Members.Add(user);
+                    ticket.Project.Members!.Add(user);
                     await _context.SaveChangesAsync();
                     return true;
                 }
@@ -105,16 +86,48 @@ namespace ECDBugTracker.Services
             }
         }
 
-        public async Task<List<Ticket>> GetAllTicketByProjectIdAsync(int projectId)
+        public async Task<List<Ticket>> GetAllTicketByCompanyIdAsync(int companyId)
         {
             try
             {
-                List<Ticket> tickets = await _context.Tickets
-                                                             .Where(t => t.ProjectId == projectId)
-                                                             .Include(t => t.Project)
-                                                             .Include(t => t.ProjectId)
-                                                             .ToListAsync();
+                List<Ticket> tickets = await _context.Projects
+                                                     .Where(p => p.CompanyId == companyId && p.Archived == false)
+                                                     .SelectMany(p => p.Tickets!)
+                                                       .Include(t => t.TicketAttachments)
+                                                       .Include(t => t.DeveloperUser)
+                                                       .Include(t => t.Comments)
+                                                       .Include(t => t.History)
+                                                       .Include(t => t.Project)
+                                                       .Include(t => t.TicketType)
+                                                       .Include(t => t.TicketAttachments)
+                                                       .Include(t => t.TicketPriority)
+                                                       .Include(t => t.TicketStatus)
+                                                       .Where(t => !t.Archived && !t.ArchivedByProject)
+                                                     .ToListAsync(); 
                 return tickets;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        public async Task<List<Ticket>> GetAllTicketsRelatedToUser(string userId)
+        {
+            try
+            {
+                List<Ticket> relatedTickets = await _context.Tickets!.Where(t => t.DeveloperUserId == userId ||
+                                                                           t.SubmitterUserId == userId ||
+                                                                           t.Project!.Members!.Any(m => m.Id == userId))
+                                                                    .Include(t => t.DeveloperUser)
+                                                                    .Include(t => t.Project)
+                                                                    .Include(t => t.SubmitterUser)
+                                                                    .Include(t => t.TicketPriority)
+                                                                    .Include(t => t.TicketStatus)
+                                                                    .Include(t => t.TicketType)
+                                                                    .ToListAsync();
+                return relatedTickets;
             }
             catch (Exception)
             {
@@ -127,7 +140,7 @@ namespace ECDBugTracker.Services
         {
             try
             {
-                List<Ticket> tickets = await _context.Tickets
+                List<Ticket> tickets = await _context.Tickets!
                                                              .Where(t => t.ProjectId == projectId)
                                                              .Include(t => t.Project)
                                                              .Include(t => t.TicketPriority)
@@ -161,11 +174,45 @@ namespace ECDBugTracker.Services
             }
         }
 
+        #region Get Ticket As No Tracking Async
+        public async Task<Ticket> GetTicketAsNoTrackingAsync(int ticketId, int companyId)
+        {
+            try
+            {
+                Ticket? ticket = await _context.Projects
+                                .Where(p => p.CompanyId == companyId && p.Archived == false)
+                                .SelectMany(p => p.Tickets!)
+                                  .Include(t => t.TicketAttachments)
+                                  .Include(t => t.DeveloperUser)
+                                  .Include(t => t.Comments)
+                                  .Include(t => t.History)
+                                  .Include(t => t.Project)
+                                  .Include(t => t.TicketType)
+                                  .Include(t => t.TicketAttachments)
+                                  .Include(t => t.TicketPriority)
+                                  .Include(t => t.TicketStatus)
+                                  .Where(t => !t.Archived && !t.ArchivedByProject)
+                                .AsNoTracking()
+                                .FirstOrDefaultAsync(t => t.Id == ticketId);
+                return ticket!;
+
+
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        #endregion
         public async Task<Ticket> GetTicketByIdAsync(int ticketId)
         {
-            Ticket ticket = await _context.Tickets
+            Ticket? ticket = await _context.Tickets!
                                             .Include(t => t.SubmitterUser)
                                             .Include(t => t.DeveloperUser)
+                                            .Include(t => t.Comments)
+                                            .Include(t => t.History)
                                             .Include(t => t.Project)                                              
                                             .Include(t => t.TicketType)
                                             .Include(t => t.TicketAttachments)
@@ -178,20 +225,14 @@ namespace ECDBugTracker.Services
 
         }
 
-        public async Task<List<Ticket>> GetUnassignedTicketsAsync(int projectId)
+        public async Task<List<Ticket>> GetUnassignedTicketsAsync(int companyId)
         {
             try
             {
-                List<Ticket> tickets = await GetAllTicketByProjectIdAsync(projectId);
-                List<Ticket> unassignedTickets = new List<Ticket>();
+                List<Ticket> tickets = await GetAllTicketByCompanyIdAsync(companyId);
 
-                foreach (Ticket ticket in tickets)
-                {
-                    if(await GetDeveloperAsync(ticket.Id)! == null)
-                    {
-                        unassignedTickets.Add(ticket);
-                    }
-                }
+                List<Ticket> unassignedTickets = tickets.Where(t => t.DeveloperUserId == null).ToList();
+
                 return unassignedTickets;
             }
             catch (Exception)
@@ -226,7 +267,7 @@ namespace ECDBugTracker.Services
             try
             {
                 Ticket ticket = await GetTicketByIdAsync(ticketId);
-                BTUser user = await GetDeveloperAsync(ticketId);
+                BTUser user = await GetDeveloperAsync(ticketId)!;
 
                 if(ticket.DeveloperUser != null)
                 {
@@ -245,7 +286,7 @@ namespace ECDBugTracker.Services
             try
             {
                 Ticket? ticket = await GetTicketByIdAsync(ticketId);
-                bool onTicket = ticket.Project.Members!.Any(t => t.Id == user.Id);
+                bool onTicket = ticket.Project!.Members!.Any(t => t.Id == user.Id);
 
                 if (onTicket)
                 {
