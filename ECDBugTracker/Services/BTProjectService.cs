@@ -123,6 +123,25 @@ namespace ECDBugTracker.Services
                                                        .Where(p => p.CompanyId == companyId && !p.Archived)
                                                        .Include(p => p.Company)
                                                        .Include(p => p.ProjectPriority)
+                                                       .Include(p => p.Tickets)
+                                                       .ToListAsync();
+                return projects;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        public async Task<List<Project>> GetAllProjectsByPriorityAsync(int companyId, string priority)
+        {
+            try
+            {
+                List<Project> projects = await _context.Projects
+                                                       .Where(p => p.Archived == false && p.CompanyId == companyId && p.ProjectPriority!.Name == priority)
+                                                       .Include(p => p.Company)
+                                                       .Include(p => p.ProjectPriority)
                                                        .ToListAsync();
                 return projects;
             }

@@ -7,6 +7,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using ECDBugTracker.Models;
+using ECDBugTracker.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -17,13 +18,16 @@ namespace ECDBugTracker.Areas.Identity.Pages.Account.Manage
     {
         private readonly UserManager<BTUser> _userManager;
         private readonly SignInManager<BTUser> _signInManager;
+        private readonly IImageService _imageService;
 
         public IndexModel(
             UserManager<BTUser> userManager,
-            SignInManager<BTUser> signInManager)
+            SignInManager<BTUser> signInManager,
+            IImageService imageService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _imageService = imageService;
         }
 
         /// <summary>
@@ -59,6 +63,11 @@ namespace ECDBugTracker.Areas.Identity.Pages.Account.Manage
             [Phone]
             [Display(Name = "Phone number")]
             public string PhoneNumber { get; set; }
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
+            public byte[] ImageFileData { get; set; }
+            public string ImageFileType { get; set; }
+            public IFormFile ImageFormFile { get; set; }
         }
 
         private async Task LoadAsync(BTUser user)
@@ -66,11 +75,16 @@ namespace ECDBugTracker.Areas.Identity.Pages.Account.Manage
             var userName = await _userManager.GetUserNameAsync(user);
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
 
+
             Username = userName;
 
             Input = new InputModel
             {
-                PhoneNumber = phoneNumber
+                PhoneNumber = phoneNumber,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                ImageFileData = user.ImageData,
+                ImageFileType = user.ImageFileType
             };
         }
 
@@ -99,6 +113,16 @@ namespace ECDBugTracker.Areas.Identity.Pages.Account.Manage
                 await LoadAsync(user);
                 return Page();
             }
+
+            user.FirstName = Input.FirstName;
+            user.LastName = Input.LastName;
+            if (Input.ImageFormFile != null)
+            {
+                user.ImageData = await _imageService.ConvertFileToByteArrayAsync(Input.ImageFormFile);
+                user.ImageFileType = Input.ImageFormFile.ContentType;
+            }
+
+            await _userManager.UpdateAsync(user);
 
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
             if (Input.PhoneNumber != phoneNumber)

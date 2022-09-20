@@ -74,13 +74,15 @@ namespace ECDBugTracker.Controllers
                 return NotFound();
             }
 
-            var ticket = await _context.Tickets
+            Ticket? ticket = await _context.Tickets
+                .Include(t => t.Comments!).ThenInclude(c => c.User)
                 .Include(t => t.DeveloperUser)
                 .Include(t => t.Project)
                 .Include(t => t.SubmitterUser)
                 .Include(t => t.TicketPriority)
                 .Include(t => t.TicketStatus)
                 .Include(t => t.TicketType)
+                .Include(t => t.TicketAttachments)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (ticket == null)
             {
@@ -261,6 +263,54 @@ namespace ECDBugTracker.Controllers
             return View(relatedTickets);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddTicketAttachment([Bind("Id,FormFile,Description,TicketId")] TicketAttachment ticketAttachment)
+        {
+            string statusMessage;
+
+            if (ModelState.IsValid && ticketAttachment.FormFile != null)
+            {
+                ticketAttachment.FileData = await _imageService.ConvertFileToByteArrayAsync(ticketAttachment.FormFile);
+                //ticketAttachment.FileName = ticketAttachment.FormFile.FileName;
+                ticketAttachment.FileType = ticketAttachment.FormFile.ContentType;
+
+                ticketAttachment.Created = DataUtility.GetPostGresDate(DateTime.UtcNow);
+                ticketAttachment.UserId = _userManager.GetUserId(User);
+
+                await _btTicketService.AddTicketAttachmentAsync(ticketAttachment);
+                statusMessage = "Success: New attachment added to Ticket.";
+            }
+            else
+            {
+                statusMessage = "Error: Invalid data.";
+
+            }
+
+            return RedirectToAction("Details", new { id = ticketAttachment.TicketId, message = statusMessage });
+        }
+
+
+        [HttpPost]
+            [ValidateAntiForgeryToken]
+            public async Task<IActionResult> AddTicketComment([Bind("Id,TicketId,Comment")] TicketComment? ticketComment)
+            {
+                ModelState.Remove("UserId");
+
+                if (ModelState.IsValid)
+                {
+                    ticketComment!.UserId = _userManager.GetUserId(User);
+                    ticketComment.Created = DataUtility.GetPostGresDate(DateTime.UtcNow);
+
+                    _context.Add(ticketComment);
+                    await _context.SaveChangesAsync();
+                }
+
+                return RedirectToAction("Details", "Tickets", new {id = ticketComment.TicketId});
+
+            }
+        
+
         //Assign Developer GET
         public async Task<IActionResult> AssignDeveloper(int? id)
         {
@@ -334,6 +384,17 @@ namespace ECDBugTracker.Controllers
             model.DeveloperList = new SelectList(await _btProjectService.GetProjectMembersByRoleAsync(model.Ticket!.ProjectId, nameof(BTRoles.Developer)), "Id", "FullName", model.DeveloperID);
             return View(model);
 
+        }
+
+        public async Task<IActionResult> ShowFile(int id)
+        {
+            TicketAttachment ticketAttachment = await _btTicketService.GetTicketAttachmentByIdAsync(id);
+            string fileName = ticketAttachment.FileType;
+            byte[] fileData = ticketAttachment.FileData;
+            string ext = Path.GetExtension(fileName).Replace(".", "");
+
+            Response.Headers.Add("Content-Disposition", $"inline; filename={fileName}");
+            return File(fileData, $"application/{ext}");
         }
 
 

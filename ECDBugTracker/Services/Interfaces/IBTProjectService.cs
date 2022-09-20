@@ -9,6 +9,7 @@ namespace ECDBugTracker.Services.Interfaces
         public Task<bool> AddProjectManagerAsync(string userId, int projectId);
         public Task ArchiveProjectAsync(int projectId);
         public Task<List<Project>> GetAllProjectsByCompanyIdAsync(int companyId);
+        public Task<List<Project>> GetAllProjectsByPriorityAsync(int companyId, string priority);
         public Task<List<Project>> GetArchiveProjectsByCompanyIdAsync(int companyId);
         public Task<Project> GetProjectByIdAsync(int projectId);
         public Task<List<BTUser>> GetProjectMembersByRoleAsync(int projectId, string roleName);
