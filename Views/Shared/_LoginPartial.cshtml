@@ -6,19 +6,19 @@
 @inject IImageService imageService
 
 @{
-    BTUser btUser = await UserManager.GetUserAsync(User);
-    string profileImage = imageService.ConvertByteArrayToFile(btUser.ImageData!, btUser.ImageFileType!, (int) DefaultImage.BTUser);
+    //BTUser btUser = await UserManager.GetUserAsync(User);
+    //string profileImage = imageService.ConvertByteArrayToFile(btUser.ImageData!, btUser.ImageFileType!, (int) DefaultImage.BTUser);
 }
 
 <div class="dropdown py-sm-4 ms-auto ms-sm-0 flex-shrink-1">
 
     @if (SignInManager.IsSignedIn(User))
     {
-        <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+@*        <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
             <img src="@profileImage" alt="" width="28" height="28" class="rounded-circle">
             <span class="d-none d-sm-inline mx-1">@btUser.FirstName</span>
         </a>
-        <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
+*@        <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
             <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Profile</a></li>
             <li>
                 <hr class="dropdown-divider">
