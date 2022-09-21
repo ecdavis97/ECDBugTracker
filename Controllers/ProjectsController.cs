@@ -199,12 +199,8 @@ namespace ECDBugTracker.Controllers
                 return NotFound();
             }
 
-            var project = await _context.Projects
-                .Include(p => p.Members)
-                .Include(p => p.Company)
-                .Include(p => p.ProjectPriority)
-                .Include(p => p.Tickets)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var project = await _projectService.GetProjectByIdAsync(id.Value);
+
             if (project == null)
             {
                 return NotFound();

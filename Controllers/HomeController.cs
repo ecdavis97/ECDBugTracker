@@ -42,6 +42,18 @@ namespace ECDBugTracker.Controllers
             return View();
         }
 
+        public IActionResult Landing()
+        {
+
+            return View();
+        }
+
+        public IActionResult VihoDash()
+        {
+
+            return View();
+        }
+
         public async Task<IActionResult> Dashboard()
         {
             DashboardViewModel model = new();
@@ -60,10 +72,7 @@ namespace ECDBugTracker.Controllers
             return View(model);
         }
 
-        public IActionResult Landing()
-        {
-            return View(nameof(Index));
-        }
+
 
         [HttpPost]
         public async Task<JsonResult> PlotlyBarChart()

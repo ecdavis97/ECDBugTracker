@@ -49,7 +49,7 @@
                                 <li>Deadline: <span class="">@Model.EndDate.ToString("dddd, MMM dd yyyy")</span></li>
                                 <li>Priority: <span class="">@Model.ProjectPriority!.Name</span></li>
                                 @* if() logic *@
-                                @if(Model.EndDate < DateTime.Today)
+                                @if (Model.EndDate < DateTime.Today)
                                 {
                                     <h5>Status: Inactive</h5>
                                 }
@@ -70,9 +70,26 @@
                             <hr />
                         </div>
                         <div class="body" style="overflow-y:auto;height:300px;">
-                            [Project Manager]
-                            @* if() logic for Avatar/Default etc *@
 
+                            @{
+                                BTUser projectManager = await _ProjectService.GetProjectManagerAsync(Model.Id);
+
+                                if (projectManager != null)
+                                {
+                                    <span>@projectManager.FullName</span>
+                                }
+                                else
+                                {
+                                    <span>No Project Manager assigned.</span>
+
+                                    @if ((User.IsInRole(nameof(BTRoles.Admin)) || User.IsInRole(nameof(BTRoles.ProjectManager))) && projectManager == null)
+                                    {
+
+                                        <a asp-action="AssignDeveloper" asp-controller="Tickets" asp-route-id="@Model.Id" class="btn btn-outline-dark btn-sm">Assign Developer</a>
+
+                                    }
+                                }
+                            }
                         </div>
                     </div>
                 </div>
@@ -87,8 +104,25 @@
                         <div class="body" style="overflow-y:auto;height:300px;">
                             <ul class="right_chat list-unstyled mb-0">
 
-                                [Project Members]
-                                @* Logic for avatars *@
+                                @if(Model.Members.Count > 0)
+                                {
+                                    @foreach (BTUser member in Model.Members)
+                                    {
+                                        <span>@member.FullName, </span>
+                                       
+                                    }
+                                }
+                                else
+                                {
+                                    <span>No Members assigned yet.</span>
+
+                                    @if ((User.IsInRole(nameof(BTRoles.Admin)) || User.IsInRole(nameof(BTRoles.ProjectManager))) && Model.Members.Count < 1)
+                                    {
+
+                                        <a asp-action="AssignProjectMembers" asp-route-id="@Model.Id" class="btn btn-outline-dark btn-sm">Assign Members</a>
+
+                                    }
+                                }
                             </ul>
 
                         </div>
@@ -102,11 +136,29 @@
                             <h2>Project Activity</h2>
                             <hr />
                         </div>
-                        <div class="body" style="overflow-y:auto;height:300px;background-color:antiquewhite">
+                        <div class="body">
                             @* Project Activity loop *@
-                            [Project Activity  e.g. Ticket History]
-                        </div>
+                            @if (Model.Tickets.Any(t => t.History.Count > 0))
+                            {
 
+                                @foreach (Ticket ticket in Model.Tickets!)
+                                {
+                                    @foreach (TicketHistory ticketHistory in ticket.History!)
+                                    {
+                                        <p>@ticket.Title</p>
+                                        <p>@ticketHistory.PropertyName:</p>
+                                        <p style="color:red">@ticketHistory.OldValue --></p>
+
+                                        <p style="color:forestgreen">@ticketHistory.NewValue</p>
+                                    }
+                                }
+
+                            }
+                            else
+                            {
+                                <p>No Ticket History Yet.</p>
+                            }
+                        </div>
                     </div>
                 </div>
             </div>
@@ -116,72 +168,59 @@
                         <div class="header">
                             <h2>Tickets</h2>
                         </div>
-                        <div class="body">
-@*                            <table class="table-responsive" style="overflow-y:auto;height:600px;">
+                        <div class="card-body">
+                            <table class="table">
                                 <thead>
                                     <tr>
                                         <th>
-                                            @Html.DisplayNameFor(model => model.Name)
+                                            Ticket Title
                                         </th>
                                         <th>
-                                            @Html.DisplayNameFor(model => model.Description)
+                                            Ticket Priority
                                         </th>
                                         <th>
-                                            @Html.DisplayNameFor(model => model.TicketPriority)
+                                            Ticket Status
                                         </th>
                                         <th>
-                                            @Html.DisplayNameFor(model => model.TicketType)
+                                            Developer Name
                                         </th>
                                         <th>
-                                            @Html.DisplayNameFor(model => model.TicketStatus)
+
                                         </th>
-                                        <th>
-                                            @Html.DisplayNameFor(model => model.DeveloperUser)
-                                        </th>
-                                        <th>
-                                            @Html.DisplayNameFor(model => model.SubmitterUser)
-                                        </th>
-                                        <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var item in Model)
+                                    @foreach (var item in Model.Tickets!)
                                     {
                                         <tr>
                                             <td>
-                                                @Html.DisplayFor(modelItem => item.Title)
+                                                @item.Title
                                             </td>
                                             <td>
-                                                @Html.DisplayFor(modelItem => item.Description)
+                                                @item.TicketPriority!.Name
                                             </td>
                                             <td>
-                                                @Html.DisplayFor(modelItem => item.Project!.Description)
+                                                @item.TicketStatus!.Name
                                             </td>
+                                            @if ((User.IsInRole(nameof(BTRoles.Admin)) || User.IsInRole(nameof(BTRoles.ProjectManager))) && item.DeveloperUser == null)
+                                            {
+                                                <td>
+                                                    <a asp-action="AssignDeveloper" asp-controller="Tickets" asp-route-id="@item.Id" class="btn btn-outline-dark btn-sm">Assign Developer</a>
+                                                </td>
+                                            }
+                                            else
+                                            {
+                                                <td>@(item.DeveloperUser?.FullName ?? "Unassigned")</td>
+                                            }
                                             <td>
-                                                @Html.DisplayFor(modelItem => item.TicketPriority!.Id)
-                                            </td>
-                                            <td>
-                                                @Html.DisplayFor(modelItem => item.TicketType!.Id)
-                                            </td>
-                                            <td>
-                                                @Html.DisplayFor(modelItem => item.TicketStatus!.Id)
-                                            </td>
-                                            <td>
-                                                @Html.DisplayFor(modelItem => item.DeveloperUser!.FullName)
-                                            </td>
-                                            <td>
-                                                @Html.DisplayFor(modelItem => item.SubmitterUser!.FullName)
-                                            </td>
-                                            <td>
-                                                <a asp-action="Edit" asp-route-id="@item.Id">View Ticket</a> |
-
+                                                <a asp-action="Details" asp-controller="Tickets" asp-route-id="@item.Id">View Ticket</a>
                                             </td>
                                         </tr>
                                     }
                                 </tbody>
 
                             </table>
-*@
+
                         </div>
                     </div>
 

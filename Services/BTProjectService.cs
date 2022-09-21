@@ -176,7 +176,13 @@ namespace ECDBugTracker.Services
             Project? project = await _context.Projects
                                              .Include(p => p.Company)
                                              .Include(p => p.Members)
-                                             .Include(p => p.Tickets)
+                                             .Include(p => p.Tickets).ThenInclude(t => t.TicketAttachments)
+                                             .Include(p => p.Tickets).ThenInclude(t => t.TicketPriority)
+                                             .Include(p => p.Tickets).ThenInclude(t => t.TicketStatus)
+                                             .Include(p => p.Tickets).ThenInclude(t => t.History)
+                                             .Include(p => p.Tickets).ThenInclude(t => t.TicketType)
+                                             .Include(p => p.Tickets).ThenInclude(t => t.SubmitterUser)
+                                             .Include(p => p.Tickets).ThenInclude(t => t.DeveloperUser)
                                              .Include(p => p.ProjectPriority)
                                              .FirstOrDefaultAsync(m => m.Id == projectId);
             return project!;
